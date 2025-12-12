@@ -1,0 +1,7 @@
+{
+  "name": "STUFFACTORY",
+  "description": "Una plataforma de capacitación corporativa con creación de cursos asistida por IA, curación manual de contenido y certificación automática de empleados.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
