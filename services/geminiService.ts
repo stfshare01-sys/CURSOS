@@ -1,5 +1,4 @@
 
-
 import { GoogleGenAI, Type, Modality, Chat } from "@google/genai";
 import { Question, Chapter, Course, User } from "../types";
 
@@ -67,6 +66,7 @@ function writeString(view: DataView, offset: number, string: string) {
 // --- AI Functions ---
 
 export const generateCourseStructure = async (title: string, description: string): Promise<Chapter[]> => {
+    // STRICTLY using Gemini 2.5 Flash for structure generation
     const modelId = "gemini-2.5-flash";
     const prompt = `
         Actúa como un diseñador de currículo experto.
@@ -123,6 +123,7 @@ export const generateCourseStructure = async (title: string, description: string
 };
 
 export const generateLessonContent = async (courseTitle: string, chapterTitle: string): Promise<string> => {
+    // STRICTLY using Gemini 2.5 Flash for content generation
     const modelId = "gemini-2.5-flash";
     const prompt = `
         Eres un experto diseñador instruccional corporativo.
@@ -159,6 +160,7 @@ export const generateLessonAudio = async (text: string): Promise<string> => {
     const cleanText = text.replace(/<[^>]*>?/gm, '');
     const truncatedText = cleanText.slice(0, 500); 
 
+    // STRICTLY using Gemini 2.5 Flash TTS
     const modelId = "gemini-2.5-flash-preview-tts";
     
     try {
@@ -189,6 +191,7 @@ export const generateLessonAudio = async (text: string): Promise<string> => {
 };
 
 export const generateDialogueAudio = async (narratorText: string, expertText: string): Promise<string> => {
+    // STRICTLY using Gemini 2.5 Flash TTS
     const modelId = "gemini-2.5-flash-preview-tts";
     
     // Create script format
@@ -239,6 +242,7 @@ export const generateQuizFromContent = async (
   difficulty: 'easy' | 'medium' | 'hard' = 'medium'
 ): Promise<Question[]> => {
   
+  // STRICTLY using Gemini 2.5 Flash
   const modelId = "gemini-2.5-flash";
 
   let fullMaterial = "";
@@ -310,6 +314,7 @@ export const generateQuizFromContent = async (
 };
 
 export const createTutorSession = (lessonContent: string) => {
+    // STRICTLY using Gemini 2.5 Flash
     const modelId = "gemini-2.5-flash";
     const cleanContent = lessonContent.replace(/<[^>]*>?/gm, '');
     
@@ -337,6 +342,7 @@ export interface RecommendationResult {
 export const recommendCourses = async (user: User, availableCourses: Course[]): Promise<RecommendationResult[]> => {
     if (availableCourses.length === 0) return [];
     
+    // STRICTLY using Gemini 2.5 Flash
     const modelId = "gemini-2.5-flash";
     
     const courseList = availableCourses.map(c => `- ID: ${c.id}, Título: ${c.title}, Descripción: ${c.description}`).join('\n');
