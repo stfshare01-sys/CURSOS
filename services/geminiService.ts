@@ -4,7 +4,7 @@ import { Question, Chapter, Course, User } from "../types";
 
 // NOTE: In a production app, never expose keys on the client.
 // We assume process.env.API_KEY is available via the build tool/environment.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
 
 // --- Helper: Convert Base64 PCM to WAV Data URI ---
 const pcmToWavDataUri = (base64Pcm: string, sampleRate: number = 24000): string => {
