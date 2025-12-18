@@ -22,4 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Configuración sensible
+firebase-config.json
 .env
