@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useRef } from 'react';
 import { User, Role, AppNotification } from '../types';
 import { LogOut, BookOpen, Users, Layout as LayoutIcon, UserPlus, Briefcase, Compass, Activity, Mic2, Home, Bell, Check, X, Map } from 'lucide-react';
@@ -14,15 +12,29 @@ interface LayoutProps {
 export const Layout: React.FC<LayoutProps> = ({ user, children }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  // Inicializamos siempre como array vacío para evitar errores mientras carga
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // --- CORRECCIÓN: Manejo asíncrono de notificaciones ---
   useEffect(() => {
-      const interval = setInterval(() => {
-          setNotifications(getNotifications(user.id));
-      }, 5000);
-      setNotifications(getNotifications(user.id));
+      const fetchNotifications = async () => {
+          try {
+              // Esperamos (await) a que la nube responda
+              const data = await getNotifications(user.id);
+              // Solo actualizamos si recibimos un array válido
+              if (Array.isArray(data)) {
+                  setNotifications(data);
+              }
+          } catch (error) {
+              console.error("Error cargando notificaciones:", error);
+              setNotifications([]);
+          }
+      };
+
+      fetchNotifications(); // Carga inicial
+      const interval = setInterval(fetchNotifications, 10000); // Recargar cada 10s
       return () => clearInterval(interval);
   }, [user.id]);
 
@@ -36,22 +48,26 @@ export const Layout: React.FC<LayoutProps> = ({ user, children }) => {
       return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate('/', { replace: true });
   };
 
-  const handleMarkRead = (id: string) => {
-      markNotificationAsRead(id);
+  const handleMarkRead = async (id: string) => {
+      // Actualización optimista en la UI
       setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+      // Actualización real en la nube
+      await markNotificationAsRead(id);
   };
 
-  const handleMarkAllRead = () => {
-      markAllNotificationsAsRead(user.id);
+  const handleMarkAllRead = async () => {
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      await markAllNotificationsAsRead(user.id);
   };
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  // Protección extra: Aseguramos que notifications sea un array antes de filtrar
+  const safeNotifications = Array.isArray(notifications) ? notifications : [];
+  const unreadCount = safeNotifications.filter(n => !n.read).length;
 
   const isActive = (path: string) => location.pathname === path;
   const navItemClass = (active: boolean) => 
@@ -98,12 +114,12 @@ export const Layout: React.FC<LayoutProps> = ({ user, children }) => {
                             )}
                         </div>
                         <div className="max-h-80 overflow-y-auto">
-                            {notifications.length === 0 ? (
+                            {safeNotifications.length === 0 ? (
                                 <div className="p-8 text-center text-slate-400 text-xs italic">
                                     No tienes notificaciones.
                                 </div>
                             ) : (
-                                notifications.map(n => (
+                                safeNotifications.map(n => (
                                     <div key={n.id} className={`p-4 border-b border-slate-50 hover:bg-slate-50 transition-colors flex gap-3 ${n.read ? 'opacity-60' : 'bg-indigo-50/30'}`}>
                                         <div className={`mt-1 w-2 h-2 rounded-full shrink-0 ${n.read ? 'bg-slate-300' : 'bg-indigo-500'}`} />
                                         <div className="flex-1">
